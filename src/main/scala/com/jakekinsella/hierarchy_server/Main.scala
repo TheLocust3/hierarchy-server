@@ -1,22 +1,21 @@
 package com.jakekinsella.hierarchy_server
 
 import com.twitter.finagle.Http
+import com.twitter.finagle.param.Stats
+import com.twitter.server.TwitterServer
 import com.twitter.util.Await
 
-import io.finch._
-import io.finch.circe._
-import io.finch.syntax._
-import io.circe.generic.auto._
-
-case class TestResponse(success: String)
-
-object Main extends App {
+object Main extends TwitterServer {
   val config = AppLoader.config
+  val api = AppLoader.service
 
-  val test: Endpoint[TestResponse] =
-    get("test") { () =>
-      Ok(TestResponse("ok"))
-    }
+  def main(): Unit = {
+    val server = Http.server
+      .configured(Stats(statsReceiver))
+      .serve(s":${config.port}", api)
 
-  Await.ready(Http.server.serve(s":${config.port}", test.toService))
+    onExit { server.close() }
+
+    Await.ready(adminHttpServer)
+  }
 }
