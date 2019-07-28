@@ -1,4 +1,4 @@
-package com.jakekinsella.hierarchy_server.endpoints
+package com.jakekinsella.hierarchy_server.routes
 
 import io.finch._
 import com.jakekinsella.hierarchy_server.models.TestResponse
@@ -9,9 +9,11 @@ package object v1 {
   val base = path("api") :: path("v1")
 
   val test: Endpoint[TestResponse] =
-    get(base :: "test") { () =>
-      Ok(TestResponse("ok"))
-    }
+    get(base :: "test")(testEndpoint _)
 
-  val routes = test
+  val routes = test :+: TreeRoutes.treeRoutes
+
+  private def testEndpoint(): Output[TestResponse] = {
+    Ok(TestResponse("ok"))
+  }
 }

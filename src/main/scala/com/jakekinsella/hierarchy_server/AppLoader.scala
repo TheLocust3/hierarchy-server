@@ -11,7 +11,7 @@ import io.finch.{Application, BadRequest, InternalServerError}
 object AppLoader {
   lazy val config: HierarchyConfig = ConfigFactory.load().as[HierarchyConfig]("hierarchy").fold(throw _, identity)
 
-  lazy val api: Service[Request, Response] = endpoints.v1.routes.handle {
+  lazy val api: Service[Request, Response] = routes.v1.routes.handle {
     case e: io.finch.Error => BadRequest(e)
     case e: io.circe.Error => BadRequest(e)
     case t: Throwable => InternalServerError(new Exception(t.getCause))
