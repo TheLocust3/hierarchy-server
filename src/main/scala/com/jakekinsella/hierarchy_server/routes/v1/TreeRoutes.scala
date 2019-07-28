@@ -19,11 +19,11 @@ object TreeRoutes {
   val createLeaf: Endpoint[TreeSuccess] =
     post(treeBase :: jsonBody[CreateLeafRequest])(TreeApi.createLeaf _)
 
-  val updateLeaf: Endpoint[TreeSuccess] =
-    put(treeBase :: path[String] :: jsonBody[UpdateLeafRequest])(TreeApi.updateLeaf _)
+  val updateTree: Endpoint[TreeSuccess] =
+    put(treeBase :: path[String] :: jsonBody[UpdateLeafRequest])(TreeApi.updateTree _)
 
-  val removeLeaf: Endpoint[TreeSuccess] =
-    delete(treeBase :: path[String])(TreeApi.removeLeaf _)
+  val removeTree: Endpoint[TreeSuccess] =
+    delete(treeBase :: path[String])(TreeApi.removeTree _)
 
-  val treeRoutes = getAllTrees :+: getTree :+: createLeaf :+: updateLeaf :+: removeLeaf
+  val treeRoutes = getAllTrees :+: getTree :+: createLeaf :+: updateTree :+: removeTree
 }

@@ -17,11 +17,11 @@ object TreeApi {
     Future.value(Ok(TreeSuccess("leaf created")))
   }
 
-  def updateLeaf(uuid: String, updateLeafRequest: UpdateLeafRequest): Future[Output[TreeSuccess]] = {
-    Future.value(Ok(TreeSuccess(s"leaf with uuid: $uuid updated")))
+  def updateTree(uuid: String, updateLeafRequest: UpdateLeafRequest): Future[Output[TreeSuccess]] = {
+    Future.value(Ok(TreeSuccess(s"tree with uuid: $uuid updated")))
   }
 
-  def removeLeaf(uuid: String): Future[Output[TreeSuccess]] = {
-    Future.value(Ok(TreeSuccess(s"leaf with uuid: $uuid removed")))
+  def removeTree(uuid: String): Future[Output[TreeSuccess]] = {
+    Future.value(Ok(TreeSuccess(s"tree with uuid: $uuid removed")))
   }
 }
