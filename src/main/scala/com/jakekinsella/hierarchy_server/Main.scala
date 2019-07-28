@@ -7,7 +7,7 @@ import com.twitter.util.Await
 
 object Main extends TwitterServer {
   val config = AppLoader.config
-  val api = AppLoader.service
+  val api = AppLoader.api
 
   def main(): Unit = {
     val server = Http.server
