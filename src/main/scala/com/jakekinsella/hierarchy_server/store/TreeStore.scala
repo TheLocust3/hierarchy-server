@@ -1,22 +1,8 @@
-package com.jakekinsella.hierarchy_server.models
+package com.jakekinsella.hierarchy_server.store
 
-import io.circe.generic.auto._
-import io.circe.syntax._
-import io.circe.Encoder
+import com.jakekinsella.hierarchy_server.models.tree.{Data, Leaf, Tree}
 
-case class Data(title: String, body: String)
-
-sealed trait ITree {
-  val data: Data
-  val `type`: String
-}
-
-case class Tree(uuid: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
-
-case class Leaf(uuid: String, data: Data, `type`: String = "leaf") extends ITree
-
-// TEST DATA
-object ITree {
+class TreeStore {
   val rootTree =
     Tree("root", Data("root", "body"),
       List(
@@ -36,9 +22,4 @@ object ITree {
           List(
             Leaf("leaf-5", Data("leaf 5", "body"))
           ))))
-
-  implicit val encodeFoo: Encoder[ITree] = {
-    case tree: Tree => tree.asJson
-    case leaf: Leaf => leaf.asJson
-  }
 }
