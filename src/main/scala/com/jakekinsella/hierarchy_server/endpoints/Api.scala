@@ -12,9 +12,9 @@ trait Api { self: AppLoader =>
   private val endpoints = path("api") :: path("v1") :: treeEndpoints.routes
 
   private val policy: Cors.Policy = Cors.Policy(
-    allowsOrigin = _ => Some("*"), // TODO: will want to restrict this in the future
+    allowsOrigin = _ => Some(this.config.clientAddress),
     allowsMethods = _ => Some(Seq("GET", "POST", "PUT", "DELETE")),
-    allowsHeaders = _ => Some(Seq("Accept"))
+    allowsHeaders = _ => Some(Seq("Accept", "Content-Type"))
   )
 
   lazy val api: Service[Request, Response] = new Cors.HttpFilter(policy).andThen(endpoints.handle {
