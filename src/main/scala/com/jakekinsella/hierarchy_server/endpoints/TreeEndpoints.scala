@@ -15,7 +15,7 @@ class TreeEndpoints(treeService: TreeService) {
     get(base)(getAllTrees) :+:
     get(base :: path[String])(getTree _) :+:
     post(base :: jsonBody[CreateLeaf])(createLeaf _) :+:
-    put(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
+    patch(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
     delete(base :: path[String])(removeTree _)
 
   private def getAllTrees: Future[Output[ListOfTrees]] =

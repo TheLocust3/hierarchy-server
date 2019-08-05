@@ -13,7 +13,7 @@ trait Api { self: AppLoader =>
 
   private val policy: Cors.Policy = Cors.Policy(
     allowsOrigin = _ => Some(this.config.clientAddress),
-    allowsMethods = _ => Some(Seq("GET", "POST", "PUT", "DELETE")),
+    allowsMethods = _ => Some(Seq("GET", "POST", "PATCH", "DELETE")),
     allowsHeaders = _ => Some(Seq("Accept", "Content-Type"))
   )
 
