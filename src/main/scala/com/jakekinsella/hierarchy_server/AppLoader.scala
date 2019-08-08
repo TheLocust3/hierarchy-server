@@ -3,7 +3,7 @@ package com.jakekinsella.hierarchy_server
 import com.jakekinsella.hierarchy_server.endpoints.TreeEndpoints
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
 import com.jakekinsella.hierarchy_server.service.TreeService
-import com.jakekinsella.hierarchy_server.store.TreeStore
+import com.jakekinsella.hierarchy_server.store.{GraphDriver, TreeStore}
 import com.typesafe.config.ConfigFactory
 import io.circe.generic.auto._
 import io.circe.config.syntax._
@@ -20,4 +20,7 @@ trait AppLoader {
 
   // stores
   lazy val treeStore = wire[TreeStore]
+
+  // db drivers
+  lazy val graphDriver = wire[GraphDriver]
 }

@@ -2,7 +2,7 @@ package com.jakekinsella.hierarchy_server.store
 
 import com.jakekinsella.hierarchy_server.models.tree.{Data, Leaf, Tree}
 
-class TreeStore {
+class TreeStore(driver: GraphDriver) {
   val rootTree =
     Tree("root", Data("root", "body"),
       List(
