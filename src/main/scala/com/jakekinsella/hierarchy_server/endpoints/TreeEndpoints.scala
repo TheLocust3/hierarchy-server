@@ -24,8 +24,8 @@ class TreeEndpoints(treeService: TreeService) {
       case Right(trees) => Ok(ListOfTrees(trees))
     }
 
-  private def getTree(uuid: String): Future[Output[OneTree]] =
-    treeService.getTree(uuid).map {
+  private def getTree(id: String): Future[Output[OneTree]] =
+    treeService.getTree(id).map {
       case Left(_) => NotFound(new Exception("tree not found"))
       case Right(tree) => Ok(OneTree(tree))
     }
@@ -36,15 +36,15 @@ class TreeEndpoints(treeService: TreeService) {
       case Right(_) => Ok(Success("leaf created"))
     }
 
-  private def updateTree(uuid: String, updateLeafRequest: UpdateLeaf): Future[Output[Success]] =
-    treeService.updateTree(uuid, updateLeafRequest).map {
-      case Left(_) => BadRequest(new Exception(s"failed to update tree with uuid: $uuid")) // TODO: be more specific on error
-      case Right(_) => Ok(Success(s"tree with uuid: $uuid updated"))
+  private def updateTree(id: String, updateLeafRequest: UpdateLeaf): Future[Output[Success]] =
+    treeService.updateTree(id, updateLeafRequest).map {
+      case Left(_) => BadRequest(new Exception(s"failed to update tree with id: $id")) // TODO: be more specific on error
+      case Right(_) => Ok(Success(s"tree with id: $id updated"))
     }
 
-  private def removeTree(uuid: String): Future[Output[Success]] =
-    treeService.removeTree(uuid).map {
-      case Left(_) => BadRequest(new Exception(s"failed to remove tree with uuid: $uuid")) // TODO: be more specific on error
-      case Right(_) => Ok(Success(s"tree with uuid: $uuid removed"))
+  private def removeTree(id: String): Future[Output[Success]] =
+    treeService.removeTree(id).map {
+      case Left(_) => BadRequest(new Exception(s"failed to remove tree with id: $id")) // TODO: be more specific on error
+      case Right(_) => Ok(Success(s"tree with id: $id removed"))
     }
 }

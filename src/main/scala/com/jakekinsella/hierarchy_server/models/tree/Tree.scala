@@ -16,6 +16,6 @@ object ITree {
   }
 }
 
-case class Tree(uuid: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
+case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
 
-case class Leaf(uuid: String, data: Data, `type`: String = "leaf") extends ITree
+case class Leaf(id: String, data: Data, `type`: String = "leaf") extends ITree

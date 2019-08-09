@@ -22,4 +22,10 @@ class TreeStore(driver: GraphDriver) {
           List(
             Leaf("leaf-5", Data("leaf 5", "body"))
           ))))
+
+  // everything
+  // MATCH (r: Tree)-[*]->(t) RETURN r, t
+
+  // by id=237
+  // MATCH (r: Tree)-[*]->(t) WHERE Id(r)=237 RETURN r, t
 }

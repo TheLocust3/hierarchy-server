@@ -10,7 +10,7 @@ class TreeService(treeStore: TreeStore) {
     Future.value(Right(List(treeStore.rootTree)))
   }
 
-  def getTree(uuid: String): Future[Either[StoreError, Tree]] = {
+  def getTree(id: String): Future[Either[StoreError, Tree]] = {
     Future.value(Right(treeStore.rootTree))
   }
 
@@ -18,11 +18,11 @@ class TreeService(treeStore: TreeStore) {
     Future.value(Right(true))
   }
 
-  def updateTree(uuid: String, updateLeaf: UpdateLeaf): Future[Either[StoreError, Boolean]] = {
+  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Either[StoreError, Boolean]] = {
     Future.value(Right(true))
   }
 
-  def removeTree(uuid: String): Future[Either[StoreError, Boolean]] = {
+  def removeTree(id: String): Future[Either[StoreError, Boolean]] = {
     Future.value(Right(true))
   }
 }
