@@ -4,14 +4,19 @@ import com.jakekinsella.hierarchy_server.models.finch.{CreateLeaf, UpdateLeaf}
 import com.jakekinsella.hierarchy_server.models.tree.Tree
 import com.jakekinsella.hierarchy_server.store.{StoreError, TreeStore}
 import com.twitter.util.Future
+import org.slf4j.LoggerFactory
 
 class TreeService(treeStore: TreeStore) {
+  val logger = LoggerFactory.getLogger(this.getClass)
+
   def allTrees: Future[Either[StoreError, List[Tree]]] = {
     Future.value(Right(List(treeStore.rootTree)))
   }
 
   def getTree(id: String): Future[Either[StoreError, Tree]] = {
-    Future.value(Right(treeStore.rootTree))
+    Future {
+      Right(treeStore.matchTreeById(0))
+    }
   }
 
   def createLeaf(createLeaf: CreateLeaf): Future[Either[StoreError, Boolean]] = {

@@ -1,7 +1,7 @@
 package com.jakekinsella.hierarchy_server.store
 
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
-import org.neo4j.driver.v1.{AuthTokens, GraphDatabase}
+import org.neo4j.driver.v1._
 
 class GraphDriver(config: HierarchyConfig) extends AutoCloseable {
   lazy val neo4jConfig = config.neo4j

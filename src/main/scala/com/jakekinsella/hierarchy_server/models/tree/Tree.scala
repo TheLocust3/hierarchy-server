@@ -3,6 +3,7 @@ package com.jakekinsella.hierarchy_server.models.tree
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.Encoder
+import org.neo4j.driver.v1.types.Node
 
 sealed trait ITree {
   val data: Data
@@ -13,6 +14,18 @@ object ITree {
   implicit val encodeFoo: Encoder[ITree] = {
     case tree: Tree => tree.asJson
     case leaf: Leaf => leaf.asJson
+  }
+
+  def constructTree(rootNode: Node, parent2Children: Map[Long, Set[Node]]): Tree = {
+    Tree(
+      rootNode.id().toString,
+      Data.fromNode(rootNode),
+      parent2Children
+        .get(rootNode.id())
+        .fold(List.empty[ITree])(_.map(node => {
+          constructTree(node, parent2Children)
+        }).toList)
+    )
   }
 }
 

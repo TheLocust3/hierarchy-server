@@ -7,8 +7,11 @@ import com.twitter.finagle.http.filter.Cors
 import io.finch._
 import io.finch.circe._
 import io.circe.generic.auto._
+import org.slf4j.LoggerFactory
 
 trait Api { self: AppLoader =>
+  private val apiLogger = LoggerFactory.getLogger(this.getClass)
+
   private val endpoints = path("api") :: path("v1") :: treeEndpoints.routes
 
   private val policy: Cors.Policy = Cors.Policy(
@@ -20,6 +23,8 @@ trait Api { self: AppLoader =>
   lazy val api: Service[Request, Response] = new Cors.HttpFilter(policy).andThen(endpoints.handle {
     case e: io.finch.Error => BadRequest(e)
     case e: io.circe.Error => BadRequest(e)
-    case t: Throwable => InternalServerError(new Exception(t.getCause))
+    case t: Throwable =>
+      t.printStackTrace()
+      InternalServerError(new Exception("Internal server error"))
   }.toServiceAs[Application.Json])
 }
