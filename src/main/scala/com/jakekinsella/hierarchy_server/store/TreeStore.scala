@@ -31,7 +31,7 @@ class TreeStore(driver: GraphDriver) {
             Leaf("leaf-5", Data("leaf 5", "body"))
           ))))
 
-  def matchTreeById(id: Int): Tree = {
+  def matchTreeById(id: Int): ITree = {
     try {
       val session: Session = driver.driver.session()
 
@@ -40,6 +40,9 @@ class TreeStore(driver: GraphDriver) {
           parameters("id", new Integer(id)))
 
         val results = result.list().asScala.toList
+        if (results.isEmpty) {
+          return matchLeafById(id)
+        }
 
         val rootNode: Node = results.head.get("r").asNode()
         val nodes: List[Node] = results.map(_.get("t").asNode())
@@ -51,7 +54,22 @@ class TreeStore(driver: GraphDriver) {
           .map { case (l: Long, relationships: Set[Relationship]) => l -> relationships.map(_.endNodeId()) }
           .map { case (l: Long, relationships: Set[Long]) => l -> relationships.flatMap(r => nodes.find(p => p.id() == r)) }
 
-        ITree.constructTree(rootNode, parent2Children)
+        Tree.fromNode(rootNode, parent2Children)
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
+  def matchLeafById(id: Int): Leaf = {
+    try {
+      val session: Session = driver.driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (r: Tree) WHERE Id(r)=6 RETURN r",
+          parameters("id", new Integer(id)))
+
+        Leaf.fromNode(result.single().get("r").asNode())
       })
     } catch {
       case t: Throwable => throw t

@@ -15,20 +15,31 @@ object ITree {
     case tree: Tree => tree.asJson
     case leaf: Leaf => leaf.asJson
   }
+}
 
-  def constructTree(rootNode: Node, parent2Children: Map[Long, Set[Node]]): Tree = {
+case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
+
+object Tree {
+  def fromNode(rootNode: Node, parent2Children: Map[Long, Set[Node]]): Tree = {
     Tree(
       rootNode.id().toString,
       Data.fromNode(rootNode),
       parent2Children
         .get(rootNode.id())
         .fold(List.empty[ITree])(_.map(node => {
-          constructTree(node, parent2Children)
+          fromNode(node, parent2Children)
         }).toList)
     )
   }
 }
 
-case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
-
 case class Leaf(id: String, data: Data, `type`: String = "leaf") extends ITree
+
+object Leaf {
+  def fromNode(node: Node): Leaf = {
+    Leaf(
+      node.id().toString,
+      Data.fromNode(node)
+    )
+  }
+}
