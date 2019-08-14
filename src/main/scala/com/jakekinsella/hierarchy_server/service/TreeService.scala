@@ -13,9 +13,9 @@ class TreeService(treeStore: TreeStore) {
     Future.value(Right(List(treeStore.rootTree)))
   }
 
-  def getTree(id: String): Future[Either[StoreError, Tree]] = {
+  def getTree(id: Int): Future[Either[StoreError, Tree]] = {
     Future {
-      Right(treeStore.matchTreeById(0))
+      Right(treeStore.matchTreeById(id))
     }
   }
 
