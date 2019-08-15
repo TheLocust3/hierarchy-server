@@ -31,6 +31,22 @@ class TreeStore(driver: GraphDriver) {
             Leaf("leaf-5", Data("leaf 5", "body"))
           ))))
 
+  def matchAllRootTrees(): List[Leaf] = {
+    try {
+      val session: Session = driver.driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (r: Tree) WHERE NOT (r)<-[:PARENT_OF]-() RETURN r")
+
+        val results = result.list().asScala.toList
+
+        results.map(r => Leaf.fromNode(r.get("r").asNode()))
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
   def matchTreeById(id: Int): ITree = {
     try {
       val session: Session = driver.driver.session()

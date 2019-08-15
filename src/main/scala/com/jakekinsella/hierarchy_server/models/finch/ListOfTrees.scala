@@ -1,5 +1,5 @@
 package com.jakekinsella.hierarchy_server.models.finch
 
-import com.jakekinsella.hierarchy_server.models.tree.Tree
+import com.jakekinsella.hierarchy_server.models.tree.ITree
 
-case class ListOfTrees(trees: List[Tree])
+case class ListOfTrees(trees: List[ITree])

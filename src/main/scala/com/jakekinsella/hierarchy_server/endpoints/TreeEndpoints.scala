@@ -12,14 +12,14 @@ class TreeEndpoints(treeService: TreeService) {
   val base = path("tree")
 
   val routes =
-    get(base)(getAllTrees) :+:
+    get(base)(getAllTreesShallow) :+:
     get(base :: path[Int])(getTree _) :+:
     post(base :: jsonBody[CreateLeaf])(createLeaf _) :+:
     patch(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
     delete(base :: path[String])(removeTree _)
 
-  private def getAllTrees: Future[Output[ListOfTrees]] =
-    treeService.allTrees.map {
+  private def getAllTreesShallow: Future[Output[ListOfTrees]] =
+    treeService.allTreesShallow().map {
       case Left(_) => NotFound(new Exception("yikes"))
       case Right(trees) => Ok(ListOfTrees(trees))
     }
