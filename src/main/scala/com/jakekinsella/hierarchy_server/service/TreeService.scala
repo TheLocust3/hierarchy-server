@@ -26,8 +26,10 @@ class TreeService(treeStore: TreeStore) {
     }
   }
 
-  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Either[StoreError, Boolean]] = {
-    Future.value(Right(true))
+  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Either[StoreError, Leaf]] = {
+    Future {
+      Right(treeStore.updateTree(id.toInt, updateLeaf.data))
+    }
   }
 
   def removeTree(id: String): Future[Either[StoreError, Boolean]] = {

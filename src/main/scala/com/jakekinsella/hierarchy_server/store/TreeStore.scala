@@ -110,6 +110,24 @@ class TreeStore(driver: GraphDriver) {
     }
   }
 
+  def updateTree(id: Int, data: Data): Leaf = {
+    try {
+      val session: Session = driver.driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (t:Tree) WHERE Id(t)=$id\n" +
+                                              "SET t.title = $title\n" +
+                                              "SET t.body = $body\n" +
+                                              "RETURN t",
+          parameters("id", new Integer(id), "title", data.title, "body", data.body))
+
+        Leaf.fromNode(result.single().get("t").asNode())
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
   def removeTree(id: Int): Boolean = {
     try {
       val session: Session = driver.driver.session()
