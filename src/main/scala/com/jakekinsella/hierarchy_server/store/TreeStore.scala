@@ -109,4 +109,20 @@ class TreeStore(driver: GraphDriver) {
       case t: Throwable => throw t
     }
   }
+
+  def removeTree(id: Int): Boolean = {
+    try {
+      val session: Session = driver.driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        tx.run("MATCH (t:Tree) WHERE Id(t)=$id\n" +
+                                              "DETACH DELETE t",
+          parameters("id", new Integer(id)))
+
+        true
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
 }

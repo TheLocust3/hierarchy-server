@@ -31,6 +31,8 @@ class TreeService(treeStore: TreeStore) {
   }
 
   def removeTree(id: String): Future[Either[StoreError, Boolean]] = {
-    Future.value(Right(true))
+    Future {
+      Right(treeStore.removeTree(id.toInt))
+    }
   }
 }
