@@ -82,8 +82,26 @@ class TreeStore(driver: GraphDriver) {
       val session: Session = driver.driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        val result = tx.run("MATCH (r: Tree) WHERE Id(r)=6 RETURN r",
+        val result = tx.run("MATCH (r: Tree) WHERE Id(r)=$id RETURN r",
           parameters("id", new Integer(id)))
+
+        Leaf.fromNode(result.single().get("r").asNode())
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
+  def createLeaf(data: Data, parentId: Int): Leaf = {
+    try {
+      val session: Session = driver.driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (p:Tree) WHERE Id(p)=$parentId\n" +
+                                              "CREATE (r:Tree {title:$title, body:$body})\n" +
+                                              "CREATE (p)-[:PARENT_OF]->(r)\n" +
+                                              "RETURN r",
+          parameters("parentId", new Integer(parentId), "title", data.title, "body", data.body))
 
         Leaf.fromNode(result.single().get("r").asNode())
       })
