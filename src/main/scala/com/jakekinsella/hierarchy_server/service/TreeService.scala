@@ -2,39 +2,40 @@ package com.jakekinsella.hierarchy_server.service
 
 import com.jakekinsella.hierarchy_server.models.finch.{CreateLeaf, UpdateLeaf}
 import com.jakekinsella.hierarchy_server.models.tree.{ITree, Leaf}
-import com.jakekinsella.hierarchy_server.store.{StoreError, TreeStore}
+import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
 import org.slf4j.LoggerFactory
 
 class TreeService(treeStore: TreeStore) {
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  // TODO: CATCH ERRORS AND PUT THEM IN STOREERROR
-  def allTreesShallow(): Future[Either[StoreError, List[Leaf]]] = {
-    Future.value(Right(treeStore.matchAllRootTrees()))
-  }
-
-  def getTree(id: Int): Future[Either[StoreError, ITree]] = {
+  def allTreesShallow(): Future[List[Leaf]] = {
     Future {
-      Right(treeStore.matchTreeById(id))
+      treeStore.matchAllRootTrees()
     }
   }
 
-  def createLeaf(createLeaf: CreateLeaf): Future[Either[StoreError, Leaf]] = {
+  def getTree(id: Int): Future[ITree] = {
     Future {
-      Right(treeStore.createLeaf(createLeaf.data, createLeaf.parentId.toInt))
+      treeStore.matchTreeById(id).sort()
     }
   }
 
-  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Either[StoreError, Leaf]] = {
+  def createLeaf(createLeaf: CreateLeaf): Future[Leaf] = {
     Future {
-      Right(treeStore.updateTree(id.toInt, updateLeaf.data))
+      treeStore.createLeaf(createLeaf.data, createLeaf.parentId.toInt)
     }
   }
 
-  def removeTree(id: String): Future[Either[StoreError, Boolean]] = {
+  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Leaf] = {
     Future {
-      Right(treeStore.removeTree(id.toInt))
+      treeStore.updateTree(id.toInt, updateLeaf.data)
+    }
+  }
+
+  def removeTree(id: String): Future[Boolean] = {
+    Future {
+      treeStore.removeTree(id.toInt)
     }
   }
 }

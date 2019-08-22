@@ -1,24 +1,19 @@
 package com.jakekinsella.hierarchy_server.models.tree
 
-import com.jakekinsella.hierarchy_server.store.MalformedData
-import org.neo4j.driver.v1.types.Node
-
-import collection.JavaConverters._
+import com.jakekinsella.hierarchy_server.store.{GraphNode, MalformedData}
 
 case class Data(title: String, body: String)
 
 object Data {
-  def fromNode(node: Node): Data = {
-    val nodeMap = node.asMap().asScala.toMap
-
-    val title: String = nodeMap.get("title") match {
+  def fromNode(node: GraphNode): Data = {
+    val title: String = node.data.get("title") match {
       case Some(t) => t.toString
-      case None => throw MalformedData(nodeMap.toString())
+      case None => throw MalformedData(node.toString)
     }
 
-    val body: String = nodeMap.get("body") match {
+    val body: String = node.data.get("body") match {
       case Some(t) => t.toString
-      case None => throw MalformedData(nodeMap.toString())
+      case None => throw MalformedData(node.toString)
     }
 
     Data(title, body)

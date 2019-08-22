@@ -3,11 +3,12 @@ package com.jakekinsella.hierarchy_server.models.tree
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.Encoder
-import org.neo4j.driver.v1.types.Node
 
 sealed trait ITree {
   val data: Data
   val `type`: String
+
+  def sort(): ITree
 }
 
 object ITree {
@@ -17,29 +18,14 @@ object ITree {
   }
 }
 
-case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree
-
-object Tree {
-  def fromNode(rootNode: Node, parent2Children: Map[Long, Set[Node]]): Tree = {
-    Tree(
-      rootNode.id().toString,
-      Data.fromNode(rootNode),
-      parent2Children
-        .get(rootNode.id())
-        .fold(List.empty[ITree])(_.map(node => {
-          fromNode(node, parent2Children)
-        }).toList)
-    )
+case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree {
+  def sort(): ITree = {
+    Tree(id, data, nodes.map(_.sort()).sortBy(_.data.title))
   }
 }
 
-case class Leaf(id: String, data: Data, `type`: String = "leaf") extends ITree
-
-object Leaf {
-  def fromNode(node: Node): Leaf = {
-    Leaf(
-      node.id().toString,
-      Data.fromNode(node)
-    )
+case class Leaf(id: String, data: Data, `type`: String = "leaf") extends ITree {
+  def sort(): ITree = {
+    this
   }
 }

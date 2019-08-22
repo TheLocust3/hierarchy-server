@@ -2,6 +2,7 @@ package com.jakekinsella.hierarchy_server.endpoints
 
 import com.jakekinsella.hierarchy_server.models.finch._
 import com.jakekinsella.hierarchy_server.service.TreeService
+import com.jakekinsella.hierarchy_server.store.RecordNotFound
 import com.twitter.util.Future
 import io.finch._
 import io.finch.syntax._
@@ -19,32 +20,38 @@ class TreeEndpoints(treeService: TreeService) {
     delete(base :: path[String])(removeTree _)
 
   private def getAllTreesShallow: Future[Output[ListOfTrees]] =
-    treeService.allTreesShallow().map {
-      case Left(_) => NotFound(new Exception("yikes"))
-      case Right(trees) => Ok(ListOfTrees(trees))
-    }
+    treeService.allTreesShallow()
+      .map(trees => Ok(ListOfTrees(trees)))
+      .handle {
+        case e: Throwable => throw e
+      }
 
   private def getTree(id: Int): Future[Output[OneTree]] =
-    treeService.getTree(id).map {
-      case Left(_) => NotFound(new Exception("tree not found"))
-      case Right(tree) => Ok(OneTree(tree))
-    }
+    treeService.getTree(id)
+      .map(tree => Ok(OneTree(tree)))
+      .handle {
+        case e: RecordNotFound => NotFound(e)
+        case e: Throwable => throw e
+      }
 
-  private def createLeaf(createLeafRequest: CreateLeaf): Future[Output[Success]] =
-    treeService.createLeaf(createLeafRequest).map {
-      case Left(_) => BadRequest(new Exception("failed to create leaf")) // TODO: be more specific on error
-      case Right(_) => Ok(Success("leaf created"))
-    }
+  private def createLeaf(createLeafRequest: CreateLeaf): Future[Output[OneTree]] =
+    treeService.createLeaf(createLeafRequest)
+      .map(leaf => Ok(OneTree(leaf)))
+      .handle {
+        case e: Throwable => throw e
+      }
 
-  private def updateTree(id: String, updateLeafRequest: UpdateLeaf): Future[Output[Success]] =
-    treeService.updateTree(id, updateLeafRequest).map {
-      case Left(_) => BadRequest(new Exception(s"failed to update tree with id: $id")) // TODO: be more specific on error
-      case Right(_) => Ok(Success(s"tree with id: $id updated"))
-    }
+  private def updateTree(id: String, updateLeafRequest: UpdateLeaf): Future[Output[OneTree]] =
+    treeService.updateTree(id, updateLeafRequest)
+      .map(leaf => Ok(OneTree(leaf)))
+      .handle {
+        case e: Throwable => throw e
+      }
 
   private def removeTree(id: String): Future[Output[Success]] =
-    treeService.removeTree(id).map {
-      case Left(_) => BadRequest(new Exception(s"failed to remove tree with id: $id")) // TODO: be more specific on error
-      case Right(_) => Ok(Success(s"tree with id: $id removed"))
-    }
+    treeService.removeTree(id)
+      .map(_ => Ok(Success(s"tree with id: $id removed")))
+      .handle {
+        case e: Throwable => throw e
+      }
 }
