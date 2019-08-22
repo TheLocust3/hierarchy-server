@@ -1,7 +1,7 @@
 package com.jakekinsella.hierarchy_server.store
 
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
-import org.neo4j.driver.v1.Values.parameters
+import org.neo4j.driver.v1.Values.{value, parameters}
 import org.neo4j.driver.v1._
 import org.neo4j.driver.v1.types.Relationship
 
@@ -16,14 +16,15 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     driver.close()
   }
 
-  def getTreesWhere(where: String, parameters: Value): (Set[GraphNode], Map[GraphNode, Set[GraphNode]]) = {
+  def getTreesWhere(where: String, params: Map[String, Any]): (Set[GraphNode], Map[GraphNode, Set[GraphNode]]) = {
     try {
       val session: Session = driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        val result = tx.run(s"MATCH (r: Tree)-[p *]->(t) WHERE $where RETURN r, t, p", parameters)
+        val result = tx.run(s"MATCH (r: Tree)-[p *]->(t) WHERE $where RETURN r, t, p",
+          mapToParameters(params))
 
-        if (!result.hasNext) throw RecordNotFound(s"statement: $where, parameters; ${parameters.toString}")
+        if (!result.hasNext) throw RecordNotFound(s"statement: $where, parameters; ${params.toString}")
 
         val results = result.list().asScala.toList
 
@@ -48,12 +49,12 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
-  def getNodesWhere(where: String, parameters: Value): List[GraphNode] = {
+  def getNodesWhere(where: String, params: Map[String, Any]): List[GraphNode] = {
     try {
       val session: Session = driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        val result = tx.run(s"MATCH (r: Tree) WHERE $where RETURN r", parameters)
+        val result = tx.run(s"MATCH (r: Tree) WHERE $where RETURN r", mapToParameters(params))
 
         val results = result.list().asScala.toList
         results.map(r => GraphNode.fromNode(r.get("r").asNode()))
@@ -110,5 +111,15 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     } catch {
       case t: Throwable => throw t
     }
+  }
+
+  private def mapToParameters(params: Map[String, Any]): Value = {
+    value(params
+      .map((parameter: (String, Any)) =>
+        parameter._2 match {
+          case i: Int => parameter._1 -> new Integer(i)
+        }
+      )
+      .asJava)
   }
 }

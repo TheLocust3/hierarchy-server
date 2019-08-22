@@ -1,20 +1,18 @@
 package com.jakekinsella.hierarchy_server.store
 
 import com.jakekinsella.hierarchy_server.models.tree.{Data, ITree, Leaf, Tree}
-import org.neo4j.driver.internal.value.NullValue
-import org.neo4j.driver.v1.Values.parameters
 import org.slf4j.LoggerFactory
 
 class TreeStore(store: GraphStore) {
   val logger = LoggerFactory.getLogger(this.getClass)
 
   def matchAllRootTrees(): List[Leaf] =
-    store.getNodesWhere("NOT (r)<-[:PARENT_OF]-()", NullValue.NULL).map(n => nodeToLeaf(n))
+    store.getNodesWhere("NOT (r)<-[:PARENT_OF]-()", Map()).map(n => nodeToLeaf(n))
 
   def matchTreeById(id: Int): ITree = {
     try {
       val (rootNodes, parent2Children) =
-        store.getTreesWhere("Id(r)=$id", parameters("id", new Integer(id)))
+        store.getTreesWhere("Id(r)=$id", Map("id" -> id))
 
       nodeToTree(rootNodes.head, parent2Children)
     } catch {
@@ -37,7 +35,7 @@ class TreeStore(store: GraphStore) {
   }
 
   private def getNodeById(id: Int): GraphNode = {
-    val nodes = store.getNodesWhere("Id(r)=$id", parameters("id", new Integer(id)))
+    val nodes = store.getNodesWhere("Id(r)=$id", Map("id" -> new Integer(id)))
 
     if (nodes.isEmpty) throw RecordNotFound(s"id: $id")
     nodes.head
