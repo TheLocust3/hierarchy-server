@@ -46,13 +46,27 @@ class TreeStore(store: GraphStore) {
   }
 
   private def nodeToLeaf(node: GraphNode): Leaf = {
-    Leaf(node.id, Data.fromNode(node))
+    Leaf(node.id, nodeToData(node))
+  }
+
+  private def nodeToData(node: GraphNode): Data = {
+    val title: String = node.data.get("title") match {
+      case Some(t) => t.toString
+      case None => throw MalformedData(node.toString)
+    }
+
+    val body: String = node.data.get("body") match {
+      case Some(t) => t.toString
+      case None => throw MalformedData(node.toString)
+    }
+
+    Data(title, body)
   }
 
   private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): Tree = {
     Tree(
       rootNode.id.toString,
-      Data.fromNode(rootNode),
+      nodeToData(rootNode),
       parent2Children
         .get(rootNode)
         .fold(List.empty[ITree])(_.map(node => nodeToTree(node, parent2Children)).toList)
