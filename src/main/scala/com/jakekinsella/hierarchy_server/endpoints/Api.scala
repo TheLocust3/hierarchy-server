@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory
 trait Api { self: AppLoader =>
   private val apiLogger = LoggerFactory.getLogger(this.getClass)
 
-  private val endpoints = path("api") :: path("v1") :: treeEndpoints.routes
+  private val endpoints =
+    (path("api") :: path("v1") :: treeEndpoints.routes) :+:
+    (path("api") :: path("v1") :: listEndpoints.routes)
 
   private val policy: Cors.Policy = Cors.Policy(
     allowsOrigin = _ => Some(this.config.clientAddress),

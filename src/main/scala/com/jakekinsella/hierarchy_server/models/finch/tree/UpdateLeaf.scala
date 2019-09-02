@@ -1,4 +1,4 @@
-package com.jakekinsella.hierarchy_server.models.finch
+package com.jakekinsella.hierarchy_server.models.finch.tree
 
 import com.jakekinsella.hierarchy_server.models.tree.Data
 
