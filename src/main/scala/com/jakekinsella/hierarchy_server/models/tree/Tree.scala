@@ -3,6 +3,7 @@ package com.jakekinsella.hierarchy_server.models.tree
 import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.Encoder
+import org.slf4j.LoggerFactory
 
 sealed trait ITree {
   val data: Data

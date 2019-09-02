@@ -15,6 +15,7 @@ class TreeEndpoints(treeService: TreeService) {
   val routes =
     get(base)(getAllTreesShallow) :+:
     get(base :: path[Int])(getTree _) :+:
+    get(base :: path[Int] :: "list")(getTreeList _) :+:
     post(base :: jsonBody[CreateLeaf])(createLeaf _) :+:
     patch(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
     delete(base :: path[String])(removeTree _)
@@ -29,6 +30,14 @@ class TreeEndpoints(treeService: TreeService) {
   private def getTree(id: Int): Future[Output[OneTree]] =
     treeService.getTree(id)
       .map(tree => Ok(OneTree(tree)))
+      .handle {
+        case e: RecordNotFound => NotFound(e)
+        case e: Throwable => throw e
+      }
+
+  private def getTreeList(rootId: Int): Future[Output[ListOfTrees]] =
+    treeService.getTreeList(rootId)
+      .map(trees => Ok(ListOfTrees(trees)))
       .handle {
         case e: RecordNotFound => NotFound(e)
         case e: Throwable => throw e

@@ -63,13 +63,18 @@ class TreeStore(store: GraphStore) {
     Data(title, body)
   }
 
-  private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): Tree = {
-    Tree(
-      rootNode.id.toString,
-      nodeToData(rootNode),
-      parent2Children
-        .get(rootNode)
-        .fold(List.empty[ITree])(_.map(node => nodeToTree(node, parent2Children)).toList)
-    )
+  private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): ITree = {
+    val nodes = parent2Children
+      .get(rootNode)
+      .fold(List.empty[ITree])(_.map(node => nodeToTree(node, parent2Children)).toList)
+
+    nodes match {
+      case Nil => nodeToLeaf(rootNode)
+      case _ => Tree(
+        rootNode.id.toString,
+        nodeToData(rootNode),
+        nodes
+      )
+    }
   }
 }

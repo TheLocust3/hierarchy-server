@@ -1,7 +1,7 @@
 package com.jakekinsella.hierarchy_server.service
 
 import com.jakekinsella.hierarchy_server.models.finch.{CreateLeaf, UpdateLeaf}
-import com.jakekinsella.hierarchy_server.models.tree.{ITree, Leaf}
+import com.jakekinsella.hierarchy_server.models.tree.{ITree, Leaf, Tree}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
 import org.slf4j.LoggerFactory
@@ -9,33 +9,39 @@ import org.slf4j.LoggerFactory
 class TreeService(treeStore: TreeStore) {
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  def allTreesShallow(): Future[List[Leaf]] = {
+  def allTreesShallow(): Future[List[Leaf]] =
     Future {
       treeStore.matchAllRootTrees()
     }
-  }
 
-  def getTree(id: Int): Future[ITree] = {
+  def getTree(id: Int): Future[ITree] =
     Future {
       treeStore.matchTreeById(id).sort()
     }
-  }
 
-  def createLeaf(createLeaf: CreateLeaf): Future[Leaf] = {
+  def getTreeList(rootId: Int): Future[List[Leaf]] =
+    Future {
+      getLeaves(treeStore.matchTreeById(rootId).sort())
+    }
+
+  def createLeaf(createLeaf: CreateLeaf): Future[Leaf] =
     Future {
       treeStore.createLeaf(createLeaf.data, createLeaf.parentId.toInt)
     }
-  }
 
-  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Leaf] = {
+  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Leaf] =
     Future {
       treeStore.updateTree(id.toInt, updateLeaf.data)
     }
-  }
 
-  def removeTree(id: String): Future[Boolean] = {
+  def removeTree(id: String): Future[Boolean] =
     Future {
       treeStore.removeTree(id.toInt)
     }
-  }
+
+  private def getLeaves(tree: ITree): List[Leaf] =
+    tree match {
+      case l: Leaf => List(l)
+      case t: Tree => t.nodes.flatMap(getLeaves)
+    }
 }
