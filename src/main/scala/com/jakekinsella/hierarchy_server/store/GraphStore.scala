@@ -82,6 +82,22 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
+  def createRootNode(data: Map[String, Any]): GraphNode = {
+    try {
+      val session: Session = driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("CREATE (r:Tree $data)\n" +
+          "RETURN r",
+          parameters("data", data.asJava))
+
+        GraphNode.fromNode(result.single().get("r").asNode())
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
   def updateNodeById(id: Int, data: Map[String, Any]): GraphNode = {
     try {
       val session: Session = driver.session()

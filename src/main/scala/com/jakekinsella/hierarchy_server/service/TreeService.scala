@@ -21,7 +21,10 @@ class TreeService(treeStore: TreeStore) {
 
   def createLeaf(createLeaf: CreateLeaf): Future[Leaf] =
     Future {
-      treeStore.createLeaf(createLeaf.data, createLeaf.parentId.toInt)
+      createLeaf.parentId match {
+        case Some(id) => treeStore.createLeaf(createLeaf.data, id.toInt)
+        case None => treeStore.createRootLeaf(createLeaf.data)
+      }
     }
 
   def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Leaf] =

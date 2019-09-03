@@ -23,7 +23,9 @@ trait Api { self: AppLoader =>
   )
 
   lazy val api: Service[Request, Response] = new Cors.HttpFilter(policy).andThen(endpoints.handle {
-    case e: io.finch.Error => BadRequest(e)
+    case e: io.finch.Error =>
+      apiLogger.error(e.toString)
+      BadRequest(e)
     case e: io.circe.Error => BadRequest(e)
     case t: Throwable =>
       t.printStackTrace()

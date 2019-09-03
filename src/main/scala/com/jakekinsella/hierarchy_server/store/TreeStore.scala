@@ -24,6 +24,10 @@ class TreeStore(store: GraphStore) {
     nodeToLeaf(store.createNodeByParentId(parentId, dataToMap(data)))
   }
 
+  def createRootLeaf(data: Data): Leaf = {
+    nodeToLeaf(store.createRootNode(dataToMap(data)))
+  }
+
   def updateTree(id: Int, data: Data): Leaf = {
     nodeToLeaf(store.updateNodeById(id, dataToMap(data)))
   }
@@ -42,7 +46,7 @@ class TreeStore(store: GraphStore) {
   }
 
   private def dataToMap(data: Data): Map[String, Any] = {
-    Map("title" -> data.title, "body" -> data.body)
+    Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
   }
 
   private def nodeToLeaf(node: GraphNode): Leaf = {
@@ -60,7 +64,12 @@ class TreeStore(store: GraphStore) {
       case None => throw MalformedData(node.toString)
     }
 
-    Data(title, body)
+    val `type`: String = node.data.get("type") match {
+      case Some(t) => t.toString
+      case None => throw MalformedData(node.toString)
+    }
+
+    Data(title, body, `type`)
   }
 
   private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): ITree = {

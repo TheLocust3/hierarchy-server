@@ -1,3 +1,3 @@
 package com.jakekinsella.hierarchy_server.models.tree
 
-case class Data(title: String, body: String, status: String = "none")
+case class Data(title: String, body: String, `type`: String)
