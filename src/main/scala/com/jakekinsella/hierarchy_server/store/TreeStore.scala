@@ -9,6 +9,18 @@ class TreeStore(store: GraphStore) {
   def matchAllRootTrees(): List[Leaf] =
     store.getNodesWhere("NOT (r)<-[:PARENT_OF]-()", Map()).map(n => nodeToLeaf(n))
 
+  def matchAllLabelTrees: List[ITree] = {
+    try {
+      val (rootNodes, parent2Children) =
+        store.getTreesWhere("r.type=\"label\"", Map.empty)
+
+      rootNodes.map(root => nodeToTree(root, parent2Children)).toList
+    } catch {
+      case _: RecordNotFound =>
+        getLabelNodes.map(nodeToLeaf)
+    }
+  }
+
   def matchTreeById(id: Int): ITree = {
     try {
       val (rootNodes, parent2Children) =
@@ -20,23 +32,23 @@ class TreeStore(store: GraphStore) {
     }
   }
 
-  def createLeaf(data: Data, parentId: Int): Leaf = {
+  def createLeaf(data: Data, parentId: Int): Leaf =
     nodeToLeaf(store.createNodeByParentId(parentId, dataToMap(data)))
-  }
 
-  def createRootLeaf(data: Data): Leaf = {
+  def createRootLeaf(data: Data): Leaf =
     nodeToLeaf(store.createRootNode(dataToMap(data)))
-  }
 
-  def updateTree(id: Int, data: Data): Leaf = {
+  def updateTree(id: Int, data: Data): Leaf =
     nodeToLeaf(store.updateNodeById(id, dataToMap(data)))
-  }
 
   def removeTree(id: Int): Boolean = {
     store.deleteTreeById(id)
 
     true
   }
+
+  private def getLabelNodes: List[GraphNode] =
+    store.getNodesWhere("r.type=\"label\" AND NOT (r)<-[:PARENT_OF]-()", Map.empty)
 
   private def getNodeById(id: Int): GraphNode = {
     val nodes = store.getNodesWhere("Id(r)=$id", Map("id" -> new Integer(id)))
@@ -45,13 +57,11 @@ class TreeStore(store: GraphStore) {
     nodes.head
   }
 
-  private def dataToMap(data: Data): Map[String, Any] = {
+  private def dataToMap(data: Data): Map[String, Any] =
     Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
-  }
 
-  private def nodeToLeaf(node: GraphNode): Leaf = {
+  private def nodeToLeaf(node: GraphNode): Leaf =
     Leaf(node.id, nodeToData(node))
-  }
 
   private def nodeToData(node: GraphNode): Data = {
     val title: String = node.data.get("title") match {
