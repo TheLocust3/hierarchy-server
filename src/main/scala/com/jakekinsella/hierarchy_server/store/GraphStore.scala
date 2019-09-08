@@ -147,6 +147,22 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
+  def deleteRelationship(parentId: Int, childId: Int) = {
+    try {
+      val session: Session = driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (p:Tree) WHERE Id(p)=$parentId\n" +
+          "MATCH (c:Tree) WHERE Id(c)=$childId\n" +
+          "MATCH (p)-[r:PARENT_OF]->(c)\n" +
+          "DELETE r",
+          parameters("parentId", new Integer(parentId), "childId", new Integer(childId)))
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
   private def mapToParameters(params: Map[String, Any]): Value = {
     value(params
       .map((parameter: (String, Any)) =>

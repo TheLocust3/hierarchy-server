@@ -58,6 +58,12 @@ class TreeStore(store: GraphStore) {
     true
   }
 
+  def removeRelationship(parentId: Int, childId: Int): Boolean = {
+    store.deleteRelationship(parentId, childId)
+
+    true
+  }
+
   private def getLabelNodes: List[GraphNode] =
     store.getNodesWhere("r.type=\"label\" AND NOT (r)<-[:PARENT_OF]-()", Map.empty)
 

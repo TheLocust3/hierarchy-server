@@ -19,8 +19,9 @@ class TreeEndpoints(treeService: TreeService) {
     get(base :: path[Int])(getTree _) :+:
     post(base :: path[Int] :: path[Int])(createRelationship _) :+:
     post(base :: jsonBody[CreateLeaf])(createLeaf _) :+:
-    patch(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
-    delete(base :: path[String])(removeTree _)
+    patch(base :: path[Int] :: jsonBody[UpdateLeaf])(updateTree _) :+:
+    delete(base :: path[Int])(removeTree _) :+:
+    delete(base :: path[Int] :: path[Int])(removeRelationship _)
 
   private def getAllTreesShallow: Future[Output[ListOfTrees]] =
     treeService.allTreesShallow()
@@ -58,16 +59,23 @@ class TreeEndpoints(treeService: TreeService) {
         case e: Throwable => throw e
       }
 
-  private def updateTree(id: String, updateLeafRequest: UpdateLeaf): Future[Output[OneTree]] =
+  private def updateTree(id: Int, updateLeafRequest: UpdateLeaf): Future[Output[OneTree]] =
     treeService.updateTree(id, updateLeafRequest)
       .map(leaf => Ok(OneTree(leaf)))
       .handle {
         case e: Throwable => throw e
       }
 
-  private def removeTree(id: String): Future[Output[Success]] =
+  private def removeTree(id: Int): Future[Output[Success]] =
     treeService.removeTree(id)
       .map(_ => Ok(Success(s"tree with id: $id removed")))
+      .handle {
+        case e: Throwable => throw e
+      }
+
+  private def removeRelationship(parentId: Int, childId: Int): Future[Output[Success]] =
+    treeService.removeRelationship(parentId, childId)
+      .map(_ => Ok(Success(s"relationship with parentId: $parentId and childId: $childId removed")))
       .handle {
         case e: Throwable => throw e
       }

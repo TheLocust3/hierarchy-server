@@ -37,13 +37,18 @@ class TreeService(treeStore: TreeStore) {
       }
     }
 
-  def updateTree(id: String, updateLeaf: UpdateLeaf): Future[Leaf] =
+  def updateTree(id: Int, updateLeaf: UpdateLeaf): Future[Leaf] =
     Future {
-      treeStore.updateTree(id.toInt, updateLeaf.data)
+      treeStore.updateTree(id, updateLeaf.data)
     }
 
-  def removeTree(id: String): Future[Boolean] =
+  def removeTree(id: Int): Future[Boolean] =
     Future {
-      treeStore.removeTree(id.toInt)
+      treeStore.removeTree(id)
+    }
+
+  def removeRelationship(parentId: Int, childId: Int): Future[Boolean] =
+    Future {
+      treeStore.removeRelationship(parentId, childId)
     }
 }
