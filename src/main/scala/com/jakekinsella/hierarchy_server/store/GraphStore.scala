@@ -64,6 +64,24 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
+  def createRelationship(parentId: Int, childId: Int): GraphNode = {
+    try {
+      val session: Session = driver.session()
+
+      session.writeTransaction((tx: Transaction) => {
+        val result = tx.run("MATCH (p:Tree) WHERE Id(p)=$parentId\n" +
+          "MATCH (c:Tree) WHERE Id(c)=$childId\n" +
+          "CREATE (p)-[:PARENT_OF]->(c)\n" +
+          "RETURN p",
+          parameters("parentId", new Integer(parentId), "childId", new Integer(childId)))
+
+        GraphNode.fromNode(result.single().get("p").asNode())
+      })
+    } catch {
+      case t: Throwable => throw t
+    }
+  }
+
   def createNodeByParentId(parentId: Int, data: Map[String, Any]): GraphNode = {
     try {
       val session: Session = driver.session()

@@ -24,6 +24,11 @@ class TreeService(treeStore: TreeStore) {
       treeStore.matchTreeById(id).sort()
     }
 
+  def createRelationship(parentId: Int, childId: Int): Future[Leaf] =
+    Future {
+      treeStore.createRelationship(parentId, childId)
+    }
+
   def createLeaf(createLeaf: CreateLeaf): Future[Leaf] =
     Future {
       createLeaf.parentId match {

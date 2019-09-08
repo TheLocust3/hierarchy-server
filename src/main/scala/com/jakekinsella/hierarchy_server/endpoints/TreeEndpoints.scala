@@ -1,7 +1,7 @@
 package com.jakekinsella.hierarchy_server.endpoints
 
 import com.jakekinsella.hierarchy_server.models.finch._
-import com.jakekinsella.hierarchy_server.models.finch.tree.{CreateLeaf, ListOfTrees, OneTree, UpdateLeaf}
+import com.jakekinsella.hierarchy_server.models.finch.tree._
 import com.jakekinsella.hierarchy_server.service.TreeService
 import com.jakekinsella.hierarchy_server.store.RecordNotFound
 import com.twitter.util.Future
@@ -17,6 +17,7 @@ class TreeEndpoints(treeService: TreeService) {
     get(base)(getAllTreesShallow) :+:
     get(base :: "labels")(getAllLabelTrees) :+:
     get(base :: path[Int])(getTree _) :+:
+    post(base :: path[Int] :: path[Int])(createRelationship _) :+:
     post(base :: jsonBody[CreateLeaf])(createLeaf _) :+:
     patch(base :: path[String] :: jsonBody[UpdateLeaf])(updateTree _) :+:
     delete(base :: path[String])(removeTree _)
@@ -40,6 +41,13 @@ class TreeEndpoints(treeService: TreeService) {
       .map(tree => Ok(OneTree(tree)))
       .handle {
         case e: RecordNotFound => NotFound(e)
+        case e: Throwable => throw e
+      }
+
+  private def createRelationship(parentId: Int, childId: Int): Future[Output[OneTree]] =
+    treeService.createRelationship(parentId, childId)
+      .map(tree => Ok(OneTree(tree)))
+      .handle {
         case e: Throwable => throw e
       }
 

@@ -14,7 +14,15 @@ class TreeStore(store: GraphStore) {
       val (rootNodes, parent2Children) =
         store.getTreesWhere("r.type=\"label\"", Map.empty)
 
-      rootNodes.map(root => nodeToTree(root, parent2Children)).toList
+      val trees = rootNodes.map(root => nodeToTree(root, parent2Children)).toList
+      val rootLeaves = getLabelNodes.map(nodeToLeaf)
+
+      rootLeaves.map(leaf =>
+        trees.find(tree => tree.id == leaf.id) match {
+          case Some(tree) => tree
+          case None => leaf
+        }
+      )
     } catch {
       case _: RecordNotFound =>
         getLabelNodes.map(nodeToLeaf)
@@ -31,6 +39,9 @@ class TreeStore(store: GraphStore) {
       case _: RecordNotFound => nodeToLeaf(getNodeById(id))
     }
   }
+
+  def createRelationship(parentId: Int, childId: Int): Leaf =
+    nodeToLeaf(store.createRelationship(parentId, childId))
 
   def createLeaf(data: Data, parentId: Int): Leaf =
     nodeToLeaf(store.createNodeByParentId(parentId, dataToMap(data)))

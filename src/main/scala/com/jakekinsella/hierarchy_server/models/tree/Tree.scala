@@ -5,6 +5,7 @@ import io.circe.syntax._
 import io.circe.Encoder
 
 sealed trait ITree {
+  val id: String
   val data: Data
   val `type`: String
 
