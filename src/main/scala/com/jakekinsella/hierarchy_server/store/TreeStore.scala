@@ -9,24 +9,8 @@ class TreeStore(store: GraphStore) {
   def matchAllRootTrees(): List[Leaf] =
     store.getNodesWhere("NOT (r)<-[:PARENT_OF]-()", Map()).map(n => nodeToLeaf(n))
 
-  def matchAllLabelTrees: List[ITree] = {
-    try {
-      val (rootNodes, parent2Children) =
-        store.getTreesWhere("r.type=\"label\"", Map.empty)
-
-      val trees = rootNodes.map(root => nodeToTree(root, parent2Children)).toList
-      val rootLeaves = getLabelNodes.map(nodeToLeaf)
-
-      rootLeaves.map(leaf =>
-        trees.find(tree => tree.id == leaf.id) match {
-          case Some(tree) => tree
-          case None => leaf
-        }
-      )
-    } catch {
-      case _: RecordNotFound =>
-        getLabelNodes.map(nodeToLeaf)
-    }
+  def matchAllSpecialTrees: List[ITree] = {
+    matchAllLabelTrees ++ matchAllStatusTrees
   }
 
   def matchTreeById(id: Int): ITree = {
@@ -64,8 +48,51 @@ class TreeStore(store: GraphStore) {
     true
   }
 
+  private def matchAllLabelTrees: List[ITree] = {
+    try {
+      val (rootNodes, parent2Children) =
+        store.getTreesWhere("r.type=\"label\"", Map.empty)
+
+      val trees = rootNodes.map(root => nodeToTree(root, parent2Children)).toList
+      val rootLeaves = getLabelNodes.map(nodeToLeaf)
+
+      rootLeaves.map(leaf =>
+        trees.find(tree => tree.id == leaf.id) match {
+          case Some(tree) => tree
+          case None => leaf
+        }
+      )
+    } catch {
+      case _: RecordNotFound =>
+        getLabelNodes.map(nodeToLeaf)
+    }
+  }
+
   private def getLabelNodes: List[GraphNode] =
     store.getNodesWhere("r.type=\"label\" AND NOT (r)<-[:PARENT_OF]-()", Map.empty)
+
+  private def matchAllStatusTrees: List[ITree] = {
+    try {
+      val (rootNodes, parent2Children) =
+        store.getTreesWhere("r.type=\"status\"", Map.empty)
+
+      val trees = rootNodes.map(root => nodeToTree(root, parent2Children)).toList
+      val rootLeaves = getStatusNodes.map(nodeToLeaf)
+
+      rootLeaves.map(leaf =>
+        trees.find(tree => tree.id == leaf.id) match {
+          case Some(tree) => tree
+          case None => leaf
+        }
+      )
+    } catch {
+      case _: RecordNotFound =>
+        getStatusNodes.map(nodeToLeaf)
+    }
+  }
+
+  private def getStatusNodes: List[GraphNode] =
+    store.getNodesWhere("r.type=\"status\" AND NOT (r)<-[:PARENT_OF]-()", Map.empty)
 
   private def getNodeById(id: Int): GraphNode = {
     val nodes = store.getNodesWhere("Id(r)=$id", Map("id" -> new Integer(id)))

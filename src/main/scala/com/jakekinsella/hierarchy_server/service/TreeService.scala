@@ -14,9 +14,9 @@ class TreeService(treeStore: TreeStore) {
       treeStore.matchAllRootTrees()
     }
 
-  def allLabelTrees(): Future[List[ITree]] =
+  def allSpecialTrees(): Future[List[ITree]] =
     Future {
-      treeStore.matchAllLabelTrees
+      treeStore.matchAllSpecialTrees
     }
 
   def getTree(id: Int): Future[ITree] =
