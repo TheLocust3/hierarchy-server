@@ -1,7 +1,7 @@
 package com.jakekinsella.hierarchy_server.store
 
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
-import org.neo4j.driver.v1.Values.{value, parameters}
+import org.neo4j.driver.v1.Values.{parameters, value}
 import org.neo4j.driver.v1._
 import org.neo4j.driver.v1.types.Relationship
 
@@ -91,7 +91,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
           "CREATE (r:Tree $data)\n" +
           "CREATE (p)-[:PARENT_OF]->(r)\n" +
           "RETURN r",
-          parameters("parentId", new Integer(parentId), "data", data.asJava))
+          parameters("parentId", new Integer(parentId), "data", (data + ("createdAt" -> System.currentTimeMillis())).asJava))
 
         GraphNode.fromNode(result.single().get("r").asNode())
       })
@@ -107,7 +107,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
       session.writeTransaction((tx: Transaction) => {
         val result = tx.run("CREATE (r:Tree $data)\n" +
           "RETURN r",
-          parameters("data", data.asJava))
+          parameters("data", (data + ("createdAt" -> System.currentTimeMillis())).asJava))
 
         GraphNode.fromNode(result.single().get("r").asNode())
       })
@@ -122,7 +122,9 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
 
       session.writeTransaction((tx: Transaction) => {
         val result = tx.run("MATCH (t:Tree) WHERE Id(t)=$id\n" +
-          "SET t = $data\n" +
+          "WITH t, t.createdAt AS createdAt\n" +
+          "SET t = $data, t.createdAt = createdAt\n" +
+          "SET t.createdAt = t.createdAt\n" +
           "RETURN t",
           parameters("id", new Integer(id), "data", data.asJava))
 
@@ -133,7 +135,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
-  def deleteTreeById(id: Int) = {
+  def deleteTreeById(id: Int): Unit = {
     try {
       val session: Session = driver.session()
 
@@ -147,7 +149,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     }
   }
 
-  def deleteRelationship(parentId: Int, childId: Int) = {
+  def deleteRelationship(parentId: Int, childId: Int): Unit = {
     try {
       val session: Session = driver.session()
 

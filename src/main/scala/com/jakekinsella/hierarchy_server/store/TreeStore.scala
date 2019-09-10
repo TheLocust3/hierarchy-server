@@ -1,5 +1,7 @@
 package com.jakekinsella.hierarchy_server.store
 
+import java.util.Date
+
 import com.jakekinsella.hierarchy_server.models.tree.{Data, ITree, Leaf, Tree}
 import org.slf4j.LoggerFactory
 
@@ -105,7 +107,14 @@ class TreeStore(store: GraphStore) {
     Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
 
   private def nodeToLeaf(node: GraphNode): Leaf =
-    Leaf(node.id, nodeToData(node))
+    Leaf(node.id, nodeToData(node), nodeToCreatedAt(node))
+
+  private def nodeToCreatedAt(node: GraphNode): Long = {
+    node.data.get("createdAt") match {
+      case Some(t) => t.toString.toLong
+      case None => throw MalformedData(node.toString)
+    }
+  }
 
   private def nodeToData(node: GraphNode): Data = {
     val title: String = node.data.get("title") match {
@@ -136,7 +145,8 @@ class TreeStore(store: GraphStore) {
       case _ => Tree(
         rootNode.id.toString,
         nodeToData(rootNode),
-        nodes
+        nodes,
+        nodeToCreatedAt(rootNode)
       )
     }
   }

@@ -9,12 +9,15 @@ class ListService(treeStore: TreeStore) {
 
   def getList(rootId: Int): Future[List[Column]] =
     Future {
-      // test column for now
-      List(
-        Column(
-          "id",
-          "none",
-          getLeaves(treeStore.matchTreeById(rootId).sort()).map(leaf => Card(leaf.id, leaf.data))))
+      val leaves = getLeaves(treeStore.matchTreeById(rootId).sort())
+      val statusTrees = treeStore.matchAllSpecialTrees.filter(tree => tree.data.`type` == "status")
+
+      statusTrees.map(statusTree => Column(
+        statusTree.id,
+        statusTree.data.title,
+        leaves
+          .filter(statusTree.contains)
+          .map(leaf => Card(leaf.id, leaf.data))))
     }
 
   private def getLeaves(tree: ITree): List[Leaf] =

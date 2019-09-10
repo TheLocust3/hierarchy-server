@@ -7,3 +7,4 @@ This project is currently in active development.
 - Dockerize
 - Add option to API to support detailed vs non-detailed nodes
 - Endpoint that flattens graph so that it can be displayed as cards in columns
+- Validate input data

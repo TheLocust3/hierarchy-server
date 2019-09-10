@@ -8,8 +8,10 @@ sealed trait ITree {
   val id: String
   val data: Data
   val `type`: String
+  val createdAt: Long
 
   def sort(): ITree
+  def contains(tree: ITree): Boolean
 }
 
 object ITree {
@@ -19,14 +21,22 @@ object ITree {
   }
 }
 
-case class Tree(id: String, data: Data, nodes: List[ITree], `type`: String = "tree") extends ITree {
+case class Tree(id: String, data: Data, nodes: List[ITree], createdAt: Long, `type`: String = "tree") extends ITree {
   def sort(): ITree = {
-    Tree(id, data, nodes.map(_.sort()).sortBy(_.data.title))
+    Tree(id, data, nodes.map(_.sort()).sortBy(_.createdAt), createdAt)
+  }
+
+  def contains(tree: ITree): Boolean = {
+    id == tree.id || nodes.foldRight(false)((tree: ITree, acc: Boolean) => tree.contains(tree) || acc)
   }
 }
 
-case class Leaf(id: String, data: Data, `type`: String = "leaf") extends ITree {
+case class Leaf(id: String, data: Data, createdAt: Long, `type`: String = "leaf") extends ITree {
   def sort(): ITree = {
     this
+  }
+
+  def contains(tree: ITree): Boolean = {
+    id == tree.id
   }
 }
