@@ -17,7 +17,9 @@ class ListService(treeStore: TreeStore) {
         statusTree.data.title,
         leaves
           .filter(statusTree.contains)
-          .map(leaf => Card(leaf.id, leaf.data))))
+          .map(leaf => Card(leaf.id, leaf.data, leaf.createdAt)),
+        statusTree.createdAt
+      ))
     }
 
   private def getLeaves(tree: ITree): List[Leaf] =
