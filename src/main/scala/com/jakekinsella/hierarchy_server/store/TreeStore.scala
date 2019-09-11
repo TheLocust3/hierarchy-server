@@ -1,7 +1,5 @@
 package com.jakekinsella.hierarchy_server.store
 
-import java.util.Date
-
 import com.jakekinsella.hierarchy_server.models.tree.{Data, ITree, Leaf, Tree}
 import org.slf4j.LoggerFactory
 

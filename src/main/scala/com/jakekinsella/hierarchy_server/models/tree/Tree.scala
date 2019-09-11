@@ -27,7 +27,7 @@ case class Tree(id: String, data: Data, nodes: List[ITree], createdAt: Long, `ty
   }
 
   def contains(tree: ITree): Boolean = {
-    id == tree.id || nodes.foldRight(false)((tree: ITree, acc: Boolean) => tree.contains(tree) || acc)
+    id == tree.id || nodes.foldLeft(false)((acc: Boolean, t: ITree) => t.contains(tree) || acc)
   }
 }
 

@@ -4,8 +4,10 @@ import com.jakekinsella.hierarchy_server.models.list.{Card, Column}
 import com.jakekinsella.hierarchy_server.models.tree.{ITree, Leaf, Tree}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
+import org.slf4j.LoggerFactory
 
 class ListService(treeStore: TreeStore) {
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   def getList(rootId: Int): Future[List[Column]] =
     Future {
