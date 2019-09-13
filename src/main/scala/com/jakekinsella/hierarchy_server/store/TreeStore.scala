@@ -130,7 +130,7 @@ class TreeStore(store: GraphStore) {
       case None => throw MalformedData(node.toString)
     }
 
-    Data(title, body, `type`)
+    Data(title, body, None, `type`)
   }
 
   private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): ITree = {
