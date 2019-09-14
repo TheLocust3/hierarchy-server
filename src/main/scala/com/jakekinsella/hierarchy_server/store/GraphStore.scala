@@ -17,7 +17,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
     driver.close()
   }
 
-  def getTreesWhere(where: String, params: Map[String, Any]): (Set[GraphNode], Map[GraphNode, Set[GraphNode]]) = {
+  def getTreesWhere(where: String, params: Map[String, Any]): (Set[GraphNode], Set[GraphNode], Map[GraphNode, Set[GraphNode]]) = {
     try {
       val session: Session = driver.session()
 
@@ -44,8 +44,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
             .asList()
             .asScala
             .map(n => GraphNode.fromNode(n.asInstanceOf[Node])))
-          ++ rootNodes
-          )
+          ++ rootNodes)
           .toSet
 
         val parent2Children: Map[GraphNode, Set[GraphNode]] =
@@ -70,7 +69,7 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
                 })
           }
 
-        (rootNodes, parent2Children)
+        (rootNodes, nodes, parent2Children)
       })
     } catch {
       case t: Throwable => throw t

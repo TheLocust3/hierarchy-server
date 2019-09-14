@@ -1,37 +1,33 @@
 package com.jakekinsella.hierarchy_server.store
 
-import com.jakekinsella.hierarchy_server.models.tree.{Data, ITree, Leaf, Tree}
+import com.jakekinsella.hierarchy_server.models.graph.{Node, Tree, Data}
 
 class TreeStore(store: GraphStore) {
-  def matchAllRootTrees(): List[Leaf] =
+  def matchAllRootTrees(): List[Node] =
     store
       .getTreesWhere("NOT (r)<-[:PARENT_OF]-()", Map())
       ._1
-      .map(n => nodeToLeaf(n))
+      .map(n => toNode(n))
       .toList
 
-  def matchAllSpecialTrees: List[ITree] = {
-    matchAllLabelTrees ++ matchAllStatusTrees
-  }
-
-  def matchTreeById(id: Int): ITree = {
-    val (rootNodes, parent2Children) =
+  def matchTreeById(id: Int): Tree = {
+    val (rootNodes, nodes, parent2Children) =
       store.getTreesWhere("Id(r)=$id", Map("id" -> id))
 
-    nodeToTree(rootNodes.head, parent2Children)
+    toTree(rootNodes.head, nodes, parent2Children)
   }
 
-  def createRelationship(parentId: Int, childId: Int): Leaf =
-    nodeToLeaf(store.createRelationship(parentId, childId))
+  def createRelationship(parentId: Int, childId: Int): Node =
+    toNode(store.createRelationship(parentId, childId))
 
-  def createLeaf(data: Data, parentId: Int): Leaf =
-    nodeToLeaf(store.createNodeByParentId(parentId, dataToMap(data)))
+  def createLeaf(data: Data, parentId: Int): Node =
+    toNode(store.createNodeByParentId(parentId, dataToMap(data)))
 
-  def createRootLeaf(data: Data): Leaf =
-    nodeToLeaf(store.createRootNode(dataToMap(data)))
+  def createRootLeaf(data: Data): Node =
+    toNode(store.createRootNode(dataToMap(data)))
 
-  def updateTree(id: Int, data: Data): Leaf =
-    nodeToLeaf(store.updateNodeById(id, dataToMap(data)))
+  def updateTree(id: Int, data: Data): Node =
+    toNode(store.updateNodeById(id, dataToMap(data)))
 
   def removeTree(id: Int): Boolean = {
     store.deleteTreeById(id)
@@ -43,20 +39,6 @@ class TreeStore(store: GraphStore) {
     true
   }
 
-  private def matchAllLabelTrees: List[ITree] = {
-    val (rootNodes, parent2Children) =
-      store.getTreesWhere("r.type=\"label\"", Map.empty)
-
-    rootNodes.map(root => nodeToTree(root, parent2Children)).toList
-  }
-
-  private def matchAllStatusTrees: List[ITree] = {
-    val (rootNodes, parent2Children) =
-      store.getTreesWhere("r.type=\"status\"", Map.empty)
-
-    rootNodes.map(root => nodeToTree(root, parent2Children)).toList
-  }
-
   private def dataToMap(data: Data): Map[String, Any] = {
     val dataMap = Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
 
@@ -66,17 +48,17 @@ class TreeStore(store: GraphStore) {
     }
   }
 
-  private def nodeToLeaf(node: GraphNode): Leaf =
-    Leaf(node.id, nodeToData(node), nodeToCreatedAt(node))
+  private def toNode(node: GraphNode): Node =
+    Node(node.id, toData(node), toCreatedAt(node))
 
-  private def nodeToCreatedAt(node: GraphNode): Long = {
+  private def toCreatedAt(node: GraphNode): Long = {
     node.data.get("createdAt") match {
       case Some(t) => t.toString.toLong
       case None => throw MalformedData(node.toString)
     }
   }
 
-  private def nodeToData(node: GraphNode): Data = {
+  private def toData(node: GraphNode): Data = {
     val title: String = node.data.get("title") match {
       case Some(t) => t.toString
       case None => throw MalformedData(node.toString)
@@ -95,19 +77,11 @@ class TreeStore(store: GraphStore) {
     Data(title, body, node.data.get("dueOn").map(_.toString.toLong), `type`)
   }
 
-  private def nodeToTree(rootNode: GraphNode, parent2Children: Map[GraphNode, Set[GraphNode]]): ITree = {
-    val nodes = parent2Children
-      .get(rootNode)
-      .fold(List.empty[ITree])(_.map(node => nodeToTree(node, parent2Children)).toList)
-
-    nodes match {
-      case Nil => nodeToLeaf(rootNode)
-      case _ => Tree(
-        rootNode.id.toString,
-        nodeToData(rootNode),
-        nodes,
-        nodeToCreatedAt(rootNode)
-      )
-    }
+  private def toTree(rootNode: GraphNode, nodes: Set[GraphNode], parent2Children: Map[GraphNode, Set[GraphNode]]): Tree = {
+    Tree(toNode(rootNode),
+      nodes.map(toNode),
+      parent2Children.map { case (parent: GraphNode, children: Set[GraphNode]) =>
+          toNode(parent) -> children.map(toNode)
+      })
   }
 }

@@ -1,45 +1,37 @@
 package com.jakekinsella.hierarchy_server.service
 
-import com.jakekinsella.hierarchy_server.models.finch.tree.{CreateLeaf, UpdateLeaf}
-import com.jakekinsella.hierarchy_server.models.tree.{ITree, Leaf}
+import com.jakekinsella.hierarchy_server.models.finch.graph.{CreateNode, UpdateNode}
+import com.jakekinsella.hierarchy_server.models.graph.{Node, Tree}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
-import org.slf4j.LoggerFactory
 
 class TreeService(treeStore: TreeStore) {
-  val logger = LoggerFactory.getLogger(this.getClass)
-
-  def allTreesShallow(): Future[List[Leaf]] =
+  def allTreesShallow(): Future[List[Node]] =
     Future {
       treeStore.matchAllRootTrees()
     }
 
-  def allSpecialTrees(): Future[List[ITree]] =
+  def getTree(id: Int): Future[Tree] =
     Future {
-      treeStore.matchAllSpecialTrees
+      treeStore.matchTreeById(id)
     }
 
-  def getTree(id: Int): Future[ITree] =
-    Future {
-      treeStore.matchTreeById(id).sort()
-    }
-
-  def createRelationship(parentId: Int, childId: Int): Future[Leaf] =
+  def createRelationship(parentId: Int, childId: Int): Future[Node] =
     Future {
       treeStore.createRelationship(parentId, childId)
     }
 
-  def createLeaf(createLeaf: CreateLeaf): Future[Leaf] =
+  def createLeaf(createNode: CreateNode): Future[Node] =
     Future {
-      createLeaf.parentId match {
-        case Some(id) => treeStore.createLeaf(createLeaf.data, id.toInt)
-        case None => treeStore.createRootLeaf(createLeaf.data)
+      createNode.parentId match {
+        case Some(id) => treeStore.createLeaf(createNode.data, id.toInt)
+        case None => treeStore.createRootLeaf(createNode.data)
       }
     }
 
-  def updateTree(id: Int, updateLeaf: UpdateLeaf): Future[Leaf] =
+  def updateTree(id: Int, updateNode: UpdateNode): Future[Node] =
     Future {
-      treeStore.updateTree(id, updateLeaf.data)
+      treeStore.updateTree(id, updateNode.data)
     }
 
   def removeTree(id: Int): Future[Boolean] =
