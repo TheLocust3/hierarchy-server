@@ -14,14 +14,10 @@ class TreeStore(store: GraphStore) {
   }
 
   def matchTreeById(id: Int): ITree = {
-    try {
-      val (rootNodes, parent2Children) =
-        store.getTreesWhere("Id(r)=$id", Map("id" -> id))
+    val (rootNodes, parent2Children) =
+      store.getTreesWhere("Id(r)=$id", Map("id" -> id))
 
-      nodeToTree(rootNodes.head, parent2Children)
-    } catch {
-      case _: RecordNotFound => nodeToLeaf(getNodeById(id))
-    }
+    nodeToTree(rootNodes.head, parent2Children)
   }
 
   def createRelationship(parentId: Int, childId: Int): Leaf =

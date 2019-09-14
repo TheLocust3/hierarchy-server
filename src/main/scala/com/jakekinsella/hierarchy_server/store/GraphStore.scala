@@ -3,11 +3,13 @@ package com.jakekinsella.hierarchy_server.store
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
 import org.neo4j.driver.v1.Values.{parameters, value}
 import org.neo4j.driver.v1._
-import org.neo4j.driver.v1.types.Relationship
+import org.neo4j.driver.v1.types.{Node, Relationship}
 
 import collection.JavaConverters._
 
 class GraphStore(config: HierarchyConfig) extends AutoCloseable {
+  lazy val MAX_DEPTH = 999;
+
   lazy val neo4jConfig = config.neo4j
 
   lazy val driver = GraphDatabase.driver(neo4jConfig.address, AuthTokens.basic(neo4jConfig.username, neo4jConfig.password))
@@ -21,26 +23,53 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
       val session: Session = driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        val result = tx.run(s"MATCH (r: Tree)-[p *]->(t) WHERE $where RETURN r, t, p",
+        val result = tx.run(s"MATCH (r: Tree)-[* 0..$MAX_DEPTH]->(t) WHERE $where\n" +
+          "MATCH p1 = ()-[* 0..1]->(t)\n" +
+          "MATCH p2 = ()-[* 0..1]->(r)\n" +
+          "RETURN nodes(p1) AS cnodes, relationships(p1) AS crels, nodes(p2) AS rnode, relationships(p2) AS rrels",
           mapToParameters(params))
 
         if (!result.hasNext) throw RecordNotFound(s"statement: $where, parameters; ${params.toString}")
 
         val results = result.list().asScala.toList
 
-        val rootNodes = results.map((r: Record) => GraphNode.fromNode(r.get("r").asNode())).toSet
-        val nodes: Set[GraphNode] = (results.map((r: Record) => GraphNode.fromNode(r.get("t").asNode())) ++ rootNodes).toSet
+        val rootNodes = results
+          .flatMap((r: Record) => r.get("rnode")
+            .asList()
+            .asScala
+            .map(n => GraphNode.fromNode(n.asInstanceOf[Node])))
+          .toSet
 
-        val parent2Children: Map[GraphNode, Set[GraphNode]] = results
-          .map(_.get("p"))
+        val nodes = (results
+          .flatMap((r: Record) => r.get("cnodes")
+            .asList()
+            .asScala
+            .map(n => GraphNode.fromNode(n.asInstanceOf[Node])))
+          ++ rootNodes
+          )
+          .toSet
+
+        val parent2Children: Map[GraphNode, Set[GraphNode]] =
+          (results.map(_.get("rrels")) ++ results.map(_.get("crels")))
           .flatMap(_.asList(_.asRelationship()).asScala)
           .toSet
           .groupBy((p: Relationship) => p.startNodeId())
-          .map { case (l: Long, relationships: Set[Relationship]) =>
-            nodes.find(n => n.id == l.toString).get -> relationships.map(_.endNodeId())
+          .map { case (parentId: Long, childrenRels: Set[Relationship]) =>
+            parentId -> childrenRels.map(_.endNodeId())
           }
-          .map { case (n: GraphNode, relationships: Set[Long]) =>
-            n -> relationships.flatMap(r => nodes.find(n => n.id == r.toString)) }
+          .map{ case (parentId: Long, childIds: Set[Long]) =>
+              nodes.find(_.id == parentId.toString) match {
+                case Some(parent) => parent -> childIds
+                case None => throw MalformedData(s"parent id $parentId for relationship not found")
+              }
+          }
+          .map { case (parent: GraphNode, childIds: Set[Long]) =>
+              parent -> childIds.map(id =>
+                nodes.find(_.id == id.toString) match {
+                  case Some(child) => child
+                  case None => throw MalformedData(s"child id $id for relationship not found")
+                })
+          }
 
         (rootNodes, parent2Children)
       })

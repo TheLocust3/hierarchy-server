@@ -1,6 +1,7 @@
 package com.jakekinsella.hierarchy_server.endpoints
 
 import com.jakekinsella.hierarchy_server.AppLoader
+import com.jakekinsella.hierarchy_server.store.StoreError
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.http.filter.Cors
@@ -27,6 +28,10 @@ trait Api { self: AppLoader =>
       apiLogger.error(e.toString)
       BadRequest(e)
     case e: io.circe.Error => BadRequest(e)
+    case e: StoreError =>
+      apiLogger.error(e.message)
+      e.printStackTrace()
+      InternalServerError(new Exception("Internal server error"))
     case t: Throwable =>
       t.printStackTrace()
       InternalServerError(new Exception("Internal server error"))
