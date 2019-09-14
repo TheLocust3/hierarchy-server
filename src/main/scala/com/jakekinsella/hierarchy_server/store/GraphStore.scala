@@ -11,7 +11,6 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
   lazy val MAX_DEPTH = 999;
 
   lazy val neo4jConfig = config.neo4j
-
   lazy val driver = GraphDatabase.driver(neo4jConfig.address, AuthTokens.basic(neo4jConfig.username, neo4jConfig.password))
 
   override def close(): Unit = {
@@ -72,21 +71,6 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
           }
 
         (rootNodes, parent2Children)
-      })
-    } catch {
-      case t: Throwable => throw t
-    }
-  }
-
-  def getNodesWhere(where: String, params: Map[String, Any]): List[GraphNode] = {
-    try {
-      val session: Session = driver.session()
-
-      session.writeTransaction((tx: Transaction) => {
-        val result = tx.run(s"MATCH (r: Tree) WHERE $where RETURN r", mapToParameters(params))
-
-        val results = result.list().asScala.toList
-        results.map(r => GraphNode.fromNode(r.get("r").asNode()))
       })
     } catch {
       case t: Throwable => throw t
