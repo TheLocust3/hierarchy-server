@@ -22,13 +22,11 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
       val session: Session = driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        val result = tx.run(s"MATCH (r: Tree)-[* 0..$MAX_DEPTH]->(t) WHERE $where\n" +
+        val result: StatementResult = tx.run(s"MATCH (r: Tree)-[* 0..$MAX_DEPTH]->(t) WHERE $where\n" +
           "MATCH p1 = ()-[* 0..1]->(t)\n" +
           "MATCH p2 = ()-[* 0..1]->(r)\n" +
           "RETURN nodes(p1) AS cnodes, relationships(p1) AS crels, nodes(p2) AS rnode, relationships(p2) AS rrels",
           mapToParameters(params))
-
-        if (!result.hasNext) throw RecordNotFound(s"statement: $where, parameters; ${params.toString}")
 
         val results = result.list().asScala.toList
 

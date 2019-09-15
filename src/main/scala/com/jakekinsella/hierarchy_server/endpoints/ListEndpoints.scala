@@ -13,7 +13,8 @@ class ListEndpoints(listService: ListService) {
   val routes = get(base :: path[Int])(getTreeList _)
 
   private def getTreeList(rootId: Int): Future[Output[OneList]] =
-    listService.getList(rootId)
+    listService
+      .getList(rootId)
       .map(list => Ok(OneList(list)))
       .handle {
         case e: RecordNotFound => NotFound(e)

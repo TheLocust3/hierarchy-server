@@ -4,22 +4,26 @@ import com.jakekinsella.hierarchy_server.models.graph.{Node, Tree}
 import com.jakekinsella.hierarchy_server.models.list.{Card, Column, Label, Status}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
+import org.slf4j.LoggerFactory
 
 class ListService(treeStore: TreeStore) {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   def getList(rootId: Int): Future[List[Column]] =
     Future {
       val tree = treeStore.matchTreeById(rootId)
-      val leaves = tree.nodes.filter(tree.parent2Children.get(_) == Set.empty).toList
+      val allNodes = treeStore.matchAllRootTrees()
+      val leaves = tree.nodes.filter(tree.parent2Children.get(_).isEmpty).toList
 
-      val statusTrees = tree.nodes.filter(_.data.`type` == "status").toList
-      val labelTrees = tree.nodes.filter(_.data.`type` == "label").toList
+      val statusTrees = allNodes.filter(_.data.`type` == "status")
+      val labelTrees = allNodes.filter(_.data.`type` == "label")
 
-      (statusTrees ++ labelTrees).map(statusTree =>
+      statusTrees.map(statusTree =>
         Column(
           statusTree.id,
           statusTree.data.title,
           leaves
-            .filter(tree.parent2Children.get(statusTree).contains)
+            .filter(tree.nodeHasChild(statusTree, _))
             .map(node =>
               Card(
                 node.id,
@@ -36,19 +40,13 @@ class ListService(treeStore: TreeStore) {
 
   private def generateLabelsForNode(node: Node, tree: Tree, labelNodes: List[Node]): List[Label] = {
     labelNodes
-      .filter(labelTree => tree.parent2Children.get(labelTree) match {
-        case Some(_) => true
-        case None => false
-      })
+      .filter(tree.nodeHasChild(_, node))
       .map(node => Label(node.id, node.data.title, node.createdAt))
   }
 
   private def generateStatusForNode(node: Node, tree: Tree, statusNodes: List[Node]): Option[Status] = {
     statusNodes
-      .find(status => tree.parent2Children.get(status) match {
-        case Some(_) => true
-        case None => false
-      })
+      .find(tree.nodeHasChild(_, node))
       .map(node => Status(node.id, node.data.title, node.createdAt))
   }
 }
