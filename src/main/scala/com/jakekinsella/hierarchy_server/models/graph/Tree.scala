@@ -14,4 +14,24 @@ case class Tree(
       case None => false
     }
   }
+
+  def getParentOfType(child: Node, `type`: String): Node = {
+    parent2Children.values.flatten.toSet.map((parent: Node) => {
+      parent.
+      parent2Children
+        .get(parent) match {
+        case Some(children) =>
+          children.find(child)
+        case None => false
+      }
+    })
+    }
+  }
+
+  def inheritColor(child: Node, `type`: String = "card"): String = {
+    child.data.color match {
+      case Some(c) => c
+      case None =>
+    }
+  }
 }

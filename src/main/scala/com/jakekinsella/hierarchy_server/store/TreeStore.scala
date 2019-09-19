@@ -40,10 +40,15 @@ class TreeStore(store: GraphStore) {
   }
 
   private def dataToMap(data: Data): Map[String, Any] = {
-    val dataMap = Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
+    var dataMap: Map[String, Any] = Map("title" -> data.title, "body" -> data.body, "type" -> data.`type`)
 
-    data.dueOn match {
+    dataMap = data.dueOn match {
       case Some(dueOn) => dataMap ++ Map("dueOn" -> dueOn)
+      case None => dataMap
+    }
+
+    data.color match {
+      case Some(color) => dataMap ++ Map("color" -> color)
       case None => dataMap
     }
   }
@@ -74,7 +79,8 @@ class TreeStore(store: GraphStore) {
       case None => throw MalformedData(node.toString)
     }
 
-    Data(title, body, node.data.get("dueOn").map(_.toString.toLong), `type`)
+    Data(title, body, node.data.get("dueOn").map(_.toString.toLong), `type`,
+      node.data.get("color").map(_.toString))
   }
 
   private def toTree(rootNode: GraphNode, nodes: Set[GraphNode], parent2Children: Map[GraphNode, Set[GraphNode]]): Tree = {
