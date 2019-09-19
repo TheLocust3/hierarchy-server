@@ -1,6 +1,6 @@
 package com.jakekinsella.hierarchy_server.service
 
-import com.jakekinsella.hierarchy_server.models.graph.{Node, Tree}
+import com.jakekinsella.hierarchy_server.models.graph.{Data, Node, Tree}
 import com.jakekinsella.hierarchy_server.models.list.{Card, Column, Label, Status}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
@@ -27,7 +27,13 @@ class ListService(treeStore: TreeStore) {
             .map(node =>
               Card(
                 node.id,
-                node.data,
+                Data(
+                  node.data.title,
+                  node.data.body,
+                  node.data.dueOn,
+                  node.data.`type`,
+                  this.getNodeColor(node, tree)
+                ),
                 node.createdAt,
                 generateLabelsForNode(node, tree, labelTrees),
                 generateStatusForNode(node, tree, statusTrees)
@@ -48,5 +54,18 @@ class ListService(treeStore: TreeStore) {
     statusNodes
       .find(tree.nodeHasChild(_, node))
       .map(node => Status(node.id, node.data.title, node.createdAt))
+  }
+
+  private def getNodeColor(node: Node, tree: Tree): Option[String] = {
+    node.data.color match {
+      case Some(_) => node.data.color
+      case None =>
+        tree
+          .getParents(node)
+          .filter(_.data.`type` == "card")
+          .toList
+          .flatMap(parent => getNodeColor(parent, tree))
+          .headOption
+    }
   }
 }
