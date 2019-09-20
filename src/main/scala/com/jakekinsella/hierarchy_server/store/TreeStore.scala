@@ -48,7 +48,10 @@ class TreeStore(store: GraphStore) {
     }
 
     data.color match {
-      case Some(color) => dataMap ++ Map("color" -> color)
+      case Some(color) => color match {
+        case "" => dataMap
+        case _ =>  dataMap ++ Map("color" -> color)
+      }
       case None => dataMap
     }
   }
