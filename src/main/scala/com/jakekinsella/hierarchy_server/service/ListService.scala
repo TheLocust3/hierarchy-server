@@ -53,7 +53,7 @@ class ListService(treeStore: TreeStore) {
   private def generateStatusForNode(node: Node, tree: Tree, statusNodes: List[Node]): Option[Status] = {
     statusNodes
       .find(tree.nodeHasChild(_, node))
-      .map(node => Status(node.id, node.data.title, node.createdAt))
+      .map(n => Status(n.id, n.data.title, n.createdAt, getNodeColor(n, tree)))
   }
 
   private def getNodeColor(node: Node, tree: Tree): Option[String] = {
