@@ -15,7 +15,8 @@ trait Api { self: AppLoader =>
 
   private val endpoints =
     (path("api") :: path("v1") :: treeEndpoints.routes) :+:
-    (path("api") :: path("v1") :: listEndpoints.routes)
+    (path("api") :: path("v1") :: listEndpoints.routes) :+:
+    (path("api") :: path("v1") :: userEndpoints.routes)
 
   private val policy: Cors.Policy = Cors.Policy(
     allowsOrigin = _ => Some(this.config.clientAddress),

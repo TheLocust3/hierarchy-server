@@ -4,11 +4,8 @@ import com.jakekinsella.hierarchy_server.models.graph.{Data, Node, Tree}
 import com.jakekinsella.hierarchy_server.models.list.{Card, Column, Label, Status}
 import com.jakekinsella.hierarchy_server.store.TreeStore
 import com.twitter.util.Future
-import org.slf4j.LoggerFactory
 
 class ListService(treeStore: TreeStore) {
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
   def getList(rootId: Int): Future[List[Column]] =
     Future {
       val tree = treeStore.matchTreeById(rootId)
@@ -32,14 +29,15 @@ class ListService(treeStore: TreeStore) {
                   node.data.body,
                   node.data.dueOn,
                   node.data.`type`,
-                  this.getNodeColor(node, tree)
+                  getNodeColor(node, tree)
                 ),
                 node.createdAt,
                 generateLabelsForNode(node, tree, labelTrees),
                 generateStatusForNode(node, tree, statusTrees)
               )
             ),
-          statusTree.createdAt
+          statusTree.createdAt,
+          getNodeColor(statusTree, tree)
         )
       )
     }
