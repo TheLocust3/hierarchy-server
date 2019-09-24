@@ -9,4 +9,28 @@ class UserService {
       User("jake.kinsella@gmail.com", "Jake Kinsella")
     }
   }
+
+  def changePassword(newPassword: String, newPasswordConfirmation: String): Future[User] = {
+    Future {
+      User("jake.kinsella@gmail.com", "Jake Kinsella")
+    }
+  }
+
+  def updateUser(email: String): Future[User] = {
+    Future {
+      User(email, "Jake Kinsella")
+    }
+  }
+
+  def signIn(email: String, password: String): Future[User] = {
+    Future {
+      User(email, "Jake Kinsella")
+    }
+  }
+
+  def signOut: Future[Boolean] = {
+    Future {
+      true
+    }
+  }
 }
