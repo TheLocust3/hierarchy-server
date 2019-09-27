@@ -1,9 +1,10 @@
 package com.jakekinsella.hierarchy_server.service
 
 import com.jakekinsella.hierarchy_server.models.user.User
+import com.jakekinsella.hierarchy_server.store.UserStore
 import com.twitter.util.Future
 
-class UserService {
+class UserService(userStore: UserStore) {
   def getUser: Future[User] = {
     Future {
       User("jake.kinsella@gmail.com", "Jake Kinsella")

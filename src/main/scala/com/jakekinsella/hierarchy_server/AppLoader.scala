@@ -3,7 +3,7 @@ package com.jakekinsella.hierarchy_server
 import com.jakekinsella.hierarchy_server.endpoints.{ListEndpoints, TreeEndpoints, UserEndpoints}
 import com.jakekinsella.hierarchy_server.models.HierarchyConfig
 import com.jakekinsella.hierarchy_server.service.{ListService, TreeService, UserService}
-import com.jakekinsella.hierarchy_server.store.{GraphStore, TreeStore}
+import com.jakekinsella.hierarchy_server.store.{GraphStore, TreeStore, UserStore}
 import com.typesafe.config.ConfigFactory
 import io.circe.generic.auto._
 import io.circe.config.syntax._
@@ -24,6 +24,7 @@ trait AppLoader {
 
   // stores
   lazy val treeStore = wire[TreeStore]
+  lazy val userStore = wire[UserStore]
 
   // db drivers
   lazy val graphDriver = wire[GraphStore]
