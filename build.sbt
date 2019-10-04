@@ -17,12 +17,4 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.softwaremill.macwire" %% "macros" % "2.3.3",
   "org.neo4j.driver" % "neo4j-java-driver" % "1.7.5",
-  "org.postgresql" % "postgresql" % "42.2.8",
-  "org.flywaydb" % "flyway-core" % "6.0.4"
 )
-
-flywayUrl := "jdbc:postgresql://localhost/hierarchy"
-flywayUser := "jakekinsella"
-flywayPassword := ""
-flywayLocations += "db/migration"
-
