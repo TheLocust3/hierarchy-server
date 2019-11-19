@@ -1,5 +1,3 @@
-enablePlugins(FlywayPlugin)
-
 name := "hierarchy-server"
 
 version := "0.1"
