@@ -150,8 +150,9 @@ class GraphStore(config: HierarchyConfig) extends AutoCloseable {
       val session: Session = driver.session()
 
       session.writeTransaction((tx: Transaction) => {
-        tx.run("MATCH (t:Tree) WHERE Id(t)=$id\n" +
-          "DETACH DELETE t",
+        tx.run("MATCH (t: Tree) WHERE Id(t) = $id\n" +
+          "OPTIONAL MATCH (t)-[:PARENT_OF*0..]->(c)\n" +
+          "DETACH DELETE t, c",
           parameters("id", new Integer(id)))
       })
     } catch {
