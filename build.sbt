@@ -14,5 +14,5 @@ libraryDependencies ++= Seq(
   "com.twitter" %% "twitter-server" % "19.7.0",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.softwaremill.macwire" %% "macros" % "2.3.3",
-  "org.neo4j.driver" % "neo4j-java-driver" % "1.7.5",
+  "org.neo4j.driver" % "neo4j-java-driver" % "1.7.5"
 )
