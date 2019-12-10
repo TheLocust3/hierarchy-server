@@ -25,4 +25,15 @@ case class Tree(
       .keys
       .toSet
   }
+
+  def getChildrenById(id: String): Set[Node] = {
+    parent2Children
+      .find { case (p, _) => p.id == id } match {
+      case Some((_, children)) =>
+        children
+          .flatMap(n => this.getChildrenById(n.id))
+      case None =>
+        Set(nodes.find(_.id == id)).flatten
+    }
+  }
 }
